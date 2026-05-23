@@ -1,6 +1,6 @@
 # KDE Framework 6 Unofficial Binary Redistribution
 
-This repository contains build scripts for building KDE Frameworks 6 binaries for Windows and macOS, with GitHub Actions CI build them automatically. You can also build them manually by yourself as well.
+This repository contains build scripts for building KDE Frameworks 6 binaries for Windows, with GitHub Actions CI build them automatically. You can also build them manually by yourself as well.
 
 ## Building
 
@@ -21,7 +21,6 @@ These are required mainly by `ki18n`.
 - Python 3
 - gettext
   - Windows: can install from [Scoop](https://scoop.sh/) via: `scoop install gettext`
-  - macOS: can install from Homebrew via: `brew install gettext`
 
 This is optional but suggested. It's available in GitHub Actions Windows environment.
 
@@ -35,21 +34,13 @@ And these two dependencies will be automatically downloaded and built by the scr
 ### Start building
 
 > [!NOTE]
-> We are using [PowerShell](https://docs.microsoft.com/en-us/powershell/) for building. If you are using macOS,
-> you need to install PowerShell first (e.g. `brew install powershell`) and enter PowerShell by running `pwsh`
-> command.
+> We are using [PowerShell](https://docs.microsoft.com/en-us/powershell/) for building.
 
 Before starting, I suggest you create a `env.local.ps1` file to set up your environment variables. You need to tell CMake where to find your Qt installation. Following is a sample `env.local.ps1`:
 
 ```powershell
-# Windows example:
 $env:QT_DIR = "D:\SDK\aqt\6.10.2\msvc2022_64"
 $env:PATH = "$env:QT_DIR\bin;$env:PATH"
-$env:CMAKE_PREFIX_PATH = "kf6redist-install"
-
-# macOS example:
-$env:QT_DIR = "/Users/blumia/Qt/6.10.2/macos"
-$env:PATH = "$env:QT_DIR/bin:$env:PATH"
 $env:CMAKE_PREFIX_PATH = "kf6redist-install"
 ```
 
@@ -89,16 +80,3 @@ Beside regular KF DLLs, be sure you don't forget the following ones:
 - `data/locale/<localeCode>/LC_MESSAGES/*.{mo,qm}` and `data/locale/<localeCode>/kf6_entry.desktop` for localization
 - `iconengines/KIconEnginePlugin.dll` to ensure icon color follows your application theme
 - `styles/breeze6.dll` provides `Breeze` style
-
-### Deploying KF6 applications for macOS
-
-Make sure you include the following files *before* bundle your application with `macdeployqt`.
-
-- `your.app/Contents/Resources/locale/<localeCode>/LC_MESSAHES/*.{mo,qm}` and `your.app/Contents/Resources/locale/<localeCode>/kf6_entry.desktop` for localization
-- `your.app/Contents/PlugIns/iconengines/KIconEnginePlugin.so` to ensure icon color follows your application theme
-- `your.app/Contents/PlugIns/styles/` provides `Breeze` style
-
-> [!NOTE]
-> Loading translations on macOS is still sort of problematic, please see https://invent.kde.org/frameworks/ki18n/-/merge_requests/164 for related discussions.
-
-After that, use `macdeployqt` to deploy and sign your app (e.g. `macdeployqt ./path/to/your.app -codesign="-"` for local development).

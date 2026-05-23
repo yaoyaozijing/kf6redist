@@ -1,5 +1,5 @@
-name: Cross-Platform CI
-run-name: KDE Framework - Qt ${{ inputs.qt_ver || 'default' }} - KF ${{ inputs.kf_ver || 'default' }}
+name: Windows CI
+run-name: KDE Framework - Qt ${{ inputs.qt_ver || 'default' }} - KF ${{ inputs.kf_ver || 'default' }} - Plasma ${{ inputs.plasma_ver || 'default' }}
 
 on:
   push:
@@ -14,6 +14,10 @@ on:
         description: 'KF Version to use'
         required: true
         default: 'v6.25.0'
+      plasma_ver:
+        description: 'Plasma Version to use for breeze'
+        required: true
+        default: 'v6.5.91'
 
 jobs:
   build:
@@ -24,22 +28,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-26]
+        os: [windows-2022]
         include:
           - os: windows-2022
             qt_arch: win64_msvc2022_64
             os_label: win
             msvc_arch: x64
             vs_ver: 2022
-          - os: macos-26
-            qt_arch: clang_64
-            os_label: mac
-            msvc_arch: arm64 # only for upload-artifact's name
-            vs_ver: 0
 
     env:
       QT_VER: ${{ inputs.qt_ver || '6.10.3' }}
       KF_VER: ${{ inputs.kf_ver || 'v6.25.0' }}
+      PLASMA_VER: ${{ inputs.plasma_ver || 'v6.5.91' }}
       AQT_ARCH: ${{ matrix.qt_arch }}
       MSVC_ARCH: ${{ matrix.msvc_arch }}
       VS_VER: ${{ matrix.vs_ver }}
@@ -61,11 +61,6 @@ jobs:
         buckets: extras
         apps: gettext
 
-    - name: Install Gettext (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install gettext
-
     - name: Enable long paths for Windows
       if: runner.os == 'Windows'
       run: |
@@ -73,9 +68,9 @@ jobs:
           -Name "LongPathsEnabled" -Value 1 -Type DWORD -Force
 
     - name: Build
-      run: ./build.ps1 -kfver ${{ env.KF_VER }}
+      run: ./build.ps1 -kfver ${{ env.KF_VER }} -plasmaver ${{ env.PLASMA_VER }}
 
     - uses: actions/upload-artifact@v7
       with:
-        name: "${{ matrix.os_label }}-${{ env.MSVC_ARCH }}-vs${{ env.VS_VER }}-qt${{ env.QT_VER }}-kf${{ env.KF_VER }}"
+        name: "${{ matrix.os_label }}-${{ env.MSVC_ARCH }}-vs${{ env.VS_VER }}-qt${{ env.QT_VER }}-kf${{ env.KF_VER }}-plasma${{ env.PLASMA_VER }}"
         path: kf6redist-install/*
